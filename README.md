@@ -1,26 +1,38 @@
-# syncomm's Dockerfiles #
+## **syncomm/spotify** 
 
-These are a collection of my dockerfiles. Most are X based for now,
-as that is the area which is giving me the most interest. 
+A docker container to enable [Spotify](https://www.spotify.com) on all Linux distributions
 
-## X11 and Docker ##
-To forward X11 through docker efficiently, all you need to do is set
-the DISPLAY environment to unix:(your host DISPLAY) and share the 
-host filesystem socket (ex. /tmp/.X11-unix/X0). This can be done in
-most cases with:
+![spotify](https://raw.githubusercontent.com/syncomm/dockerfiles/master/spotify/spotify.png) 
 
-*Host:*
+### **Features:**
+
+* Ubuntu based container with the official Spotify package
+* Pulseaudio connectivity for audio
+* X11 socket sharing
+* Runs as a normal user (in the [docker group](http://docs.docker.com/installation/ubuntulinux/#giving-non-root-access))
+* Uses a volume container for persistent config and cache
+
+Launch with [docker-spotify.sh](https://raw.githubusercontent.com/syncomm/dockerfiles/master/spotify/docker-spotify.sh) 
+
+*Note: For those who wish to keep SELinux enabled, please see my [docker-spotify SELinux policy](https://github.com/syncomm/dockerfiles/tree/master/spotify/selinux). Hardware acceleration is disabled, and for proper operation it needs to remain this way. If you don't see images on the very first run, you may need to restart spotify (once or twice) to enable them.* 
+
+### **Install:**
+
+On a system with docker installed, run the following command:
+
 ```
-sudo docker run -rm -v /tmp/.X11-unix/:/tmp/.X11-unix/ -i -t fedora /bin/bash
+curl -s https://raw.githubusercontent.com/syncomm/dockerfiles/master/spotify/docker-spotify.sh | bash 
 ```
 
-*Container:*
+Running `docker-spotify.sh` will download the syncomm/spotify container, set up the user's cache container, create the sockets for X11 and Pulseaudio, and launch spotify.
+
+### **Build:**
+
 ```
-export DISPLAY=unix:0
+git clone https://github.com/syncomm/dockerfiles.git
+cd dockerfiles/spotify
+docker build -t syncomm/spotify .
 ```
 
-_-v_ is for volume mapping and can be invoked multiple times for the same container.
-Sound can also be forwarded this way through sharing Pulseaudio sockets (and setting 
-`PULSE_SERVER` on the container to point at the socket.)
-
+Run with the supplied script [docker-spotify.sh](https://raw.githubusercontent.com/syncomm/dockerfiles/master/spotify/docker-spotify.sh) to transfer your X11 cookie and set up the Pulseaudio socket.
 
