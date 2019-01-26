@@ -24,13 +24,22 @@
 # Free Software Foundation, Inc.,                                       #
 # 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.             #
 #                                                                       #
+# modified by Timo Kramer <kontakt@timokramer.de>                       #
+#                                                                       #
 #########################################################################
+
+# name of container to use
+DOCKER_SPOTIFY='docker-spotify:latest'
 
 # Set some colors
 red='\e[0;31m'
 lpurp='\e[1;35m'
 yellow='\e[1;33m'
 NC='\e[0m' # No Color
+
+# Start the docker daemon
+echo -e "${lpurp}Starting docker daemon${NC}" 
+su -c 'systemctl start docker'
 
 # Get the X11 Cookie to pass
 echo -e "${lpurp}Grabbing X11 Cookie of host${NC}" 
@@ -49,18 +58,18 @@ RUNNING=$(docker inspect --format="{{ .State.Running }}" $CONTAINER 2> /dev/null
 
 if [ $? -eq 1 ]; then
     echo -e "${lpurp}Creating user config and cache container $CONTAINER${NC}"
-    CONTAINER_ID=$(docker create -v /home/spotify --name $CONTAINER syncomm/spotify)
+    CONTAINER_ID=$(docker create -v /home/spotify --name $CONTAINER $DOCKER_SPOTIFY)
     echo -e "${lpurp}Container $CONTAINER created with id $CONTAINER_ID{NC}"
 fi
 
-# Launch syncomm/spotify container 
-echo -e "${lpurp}Launching syncomm/spotify container${NC}" 
+# Launch spotify container 
+echo -e "${lpurp}Launching docker-spotify container${NC}" 
 echo docker run --rm --name spotify \
   -e XCOOKIE=\'$XCOOKIE\' \
   -v /tmp/.X11-unix/:/tmp/.X11-unix/ \
   -v /tmp/.spotify-pulse-socket:/tmp/.spotify-pulse-socket \
   --volumes-from $CONTAINER \
-  -t syncomm/spotify | sh
+  -t $DOCKER_SPOTIFY | sh
 
 # Clean up Pulseaudio socket
 echo -e "${lpurp}Removing Pulseaudio socket at /tmp/.spotify-pulse-socket${NC}" 
