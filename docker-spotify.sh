@@ -29,20 +29,13 @@
 #########################################################################
 
 # name of container to use
-DOCKER_SPOTIFY='docker-spotify:latest'
+DOCKER_SPOTIFY='localhost/docker-spotify'
 
 # Set some colors
 red='\e[0;31m'
 lpurp='\e[1;35m'
 yellow='\e[1;33m'
 NC='\e[0m' # No Color
-
-# Start the docker daemon
-DAEMON_RUNNING=$(systemctl is-active docker.service &> /dev/null)
-if [ $? -ne 0 ]; then
-    echo -e "${lpurp}Starting docker daemon${NC}"
-    su -c 'systemctl start docker' || exit 1
-fi
 
 # Get the X11 Cookie to pass
 echo -e "${lpurp}Grabbing X11 Cookie of host${NC}" 
@@ -56,22 +49,24 @@ then
 fi
 
 # Persistant cache and config 
-VOLUME=spotify-data
+SPOTIFY_CACHE=/home/dustin/.cache/spotify
+SPOTIFY_CONFIG=/home/dustin/.config/spotify
 EXIST=$(docker volume inspect $CONTAINER 2> /dev/null)
 
 if [ $? -eq 1 ]; then
     echo -e "${lpurp}Creating Volume $VOLUME${NC}"
-    docker volume create $CONTAINER
+    podman volume create $CONTAINER
     echo -e "${lpurp}Container $VOLUME created${NC}"
 fi
 
 # Launch spotify container 
 echo -e "${lpurp}Launching docker-spotify container${NC}" 
-echo docker run --rm --name spotify \
+echo podman run -it --rm --name spotify \
   -e XCOOKIE=\'$XCOOKIE\' \
-  --volume /tmp/.X11-unix/:/tmp/.X11-unix/ \
-  --volume /tmp/.spotify-pulse-socket:/tmp/.spotify-pulse-socket \
-  --volume $VOLUME:/home/spotify \
+  -v /tmp/.X11-unix/:/tmp/.X11-unix/ \
+  -v /tmp/.spotify-pulse-socket:/tmp/.spotify-pulse-socket \
+  -v $SPOTIFY_CACHE:/home/spotify/.cache/spotify\
+  -v $SPOTIFY_CONFIG:/home/spotify/.config/spotify\
   -t $DOCKER_SPOTIFY | sh
 
 # Clean up Pulseaudio socket
