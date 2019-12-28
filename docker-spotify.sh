@@ -49,8 +49,8 @@ then
 fi
 
 # Persistant cache and config 
-SPOTIFY_CACHE=/home/dustin/.cache/spotify
-SPOTIFY_CONFIG=/home/dustin/.config/spotify
+SPOTIFY_CACHE=$HOME/.cache/spotify
+SPOTIFY_CONFIG=$HOME/.config/spotify
 EXIST=$(docker volume inspect $CONTAINER 2> /dev/null)
 
 if [ $? -eq 1 ]; then
